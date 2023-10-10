@@ -32,7 +32,7 @@ struct viz_pub{
 
         marker.color.a = 0.5;
         marker.color.r = 0.0;
-        marker.color.g = 0.3;
+        marker.color.g = 0.4;
         marker.color.b = 0.4;
 
         marker.lifetime = ros::Duration(0.1);
