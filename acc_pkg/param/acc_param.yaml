@@ -1,0 +1,5 @@
+TrajectoryPlannerROS:
+
+#sebességprofilok:
+  x: 0.0001
+  y: 

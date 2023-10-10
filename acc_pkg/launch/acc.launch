@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<launch>
+	
+
+
+
+<node name = "acc_node" pkg = "acc_pkg" type = "odom_path_node">
+		<param name = "path_topic_name" value = "/path/raw" />
+		<param name = "odom_topic_name" value = "/agent1/odom/raw" />
+	</node>
+
+ <include file="$(find acc_param.yaml)/launch/kinect_left.launch" />
+
+</launch>
