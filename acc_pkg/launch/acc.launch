@@ -8,17 +8,6 @@
 	<param name="/use_sim_time" value="true"/>
 
 	<param name="robot_description" command="$(find xacro)/xacro $(find hamster_vehicle_description)/urdf/hamster.urdf.xacro"/>
-	
-	
-	<node name = "test_odom_path" pkg = "acc_pkg" type = "odom_path_node">
-		<param name = "path_topic_name" value = "/path/raw" />
-		<param name = "odom_topic_name" value = "/agent1/odom/raw" />
-	</node>
-
-	<node name = "test_odom_path2" pkg = "acc_pkg" type = "odom_path_node">
-		<param name = "path_topic_name" value = "/path/ground_truth" />
-		<param name = "odom_topic_name" value = "/agent1/odom/ground_truth" />
-	</node>
 
 	<node name = "acc_node" pkg = "acc_pkg" type = "acc">
 	</node>
@@ -67,4 +56,3 @@
 	<node name="transform_map_odom2" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map agent2/odom" />
 
 </launch>
-
