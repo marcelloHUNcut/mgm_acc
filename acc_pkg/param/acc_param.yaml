@@ -1,0 +1,11 @@
+#sebességprofilok:
+#tavolsag a ket auto közt
+x: 0.0001
+delta_x: 2 #idoegysegre vonatkoztatva ~sebesseg
+#ebbol szamitott sebesseg a mi autonknak
+y: 0.2
+#idokomponens
+deltat: 0.1 
+#saját autó gyorsulása
+a: 0.1
+
