@@ -124,7 +124,6 @@ include_directories(
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/acc_pkg.cpp
 # )
-add_executable(acc_node src/acc.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

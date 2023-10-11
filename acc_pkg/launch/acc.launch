@@ -2,14 +2,16 @@
 
 <launch>
 	
-
-
-
-<node name = "acc_node" pkg = "acc_pkg" type = "odom_path_node">
+	<node name = "test_odom_path" pkg = "acc_pkg" type = "odom_path_node">
 		<param name = "path_topic_name" value = "/path/raw" />
 		<param name = "odom_topic_name" value = "/agent1/odom/raw" />
 	</node>
 
- <include file="$(find acc_param.yaml)/launch/kinect_left.launch" />
+	<node name = "test_odom_path2" pkg = "acc_pkg" type = "odom_path_node">
+		<param name = "path_topic_name" value = "/path/ground_truth" />
+		<param name = "odom_topic_name" value = "/agent1/odom/ground_truth" />
+	</node>
+
+	<node name = "acc_node" pkg = "acc_pkg" type = "acc">
 
 </launch>
