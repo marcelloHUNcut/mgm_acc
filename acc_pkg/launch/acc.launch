@@ -2,15 +2,68 @@
 
 <launch>
 	
+	<arg name="agent1" default="gokart"/>
+	<arg name="rviz_file" default="$(find acc_pkg)/rviz/acc.rviz"/>
+	
+	<param name="/use_sim_time" value="true"/>
 
+	<param name="robot_description" command="$(find xacro)/xacro $(find hamster_vehicle_description)/urdf/hamster.urdf.xacro"/>
+	
+	
+	<node name = "test_odom_path" pkg = "acc_pkg" type = "odom_path_node">
+		<param name = "path_topic_name" value = "/path/raw" />
+		<param name = "odom_topic_name" value = "/agent1/odom/raw" />
+	</node>
 
+	<node name = "test_odom_path2" pkg = "acc_pkg" type = "odom_path_node">
+		<param name = "path_topic_name" value = "/path/ground_truth" />
+		<param name = "odom_topic_name" value = "/agent1/odom/ground_truth" />
+	</node>
 
-<node name = "acc_node" pkg = "acc_pkg" type = "odom_path_node">
-	<param name = "path_topic_name" value = "/path/raw" />
-	<param name = "odom_topic_name" value = "/agent1/odom/raw" />
-		
-    <rosparam file="$(find acc_pkg)/param/acc_param.yaml" command="load" />
-</node>
+	<node name = "acc_node" pkg = "acc_pkg" type = "acc">
+	</node>
 
+	<env name="GAZEBO_MODEL_PATH" value="$(find hamster_vehicle_gazebo):$(find hamster_vehicle_gazebo)/models"/>
+	<arg name="gui" value="false"/>
+	
+	<!-- Robot calibration:  AGENT2-->
+	<arg name="use_keyboard" value="true"/>
+	<arg name="x" value="10"/>
+	<arg name="y" value="0.0"/>
+	
+	<!-- GAZEBO -->
+	<include file="$(find hamster_vehicle_gazebo)/launch/hamster_world.launch">
+		<arg name="gui" value="$(arg gui)"/>
+		<arg name="world_name" value=""/>
+	</include>
+	
+	<!-- RVIZ -->
+	<node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find acc_pkg)/rviz/acc.rviz"/> 
+	
+	<!-- AGENT1 -->
+	<include file="$(find hamster_vehicle_gazebo)/launch/hamster_vehicle_spawner.launch">
+		<arg name="agent" value="agent1"/>
+		<arg name="use_keyboard" value="false"/>
+		<arg name="x" value="0"/>
+		<arg name="y" value="0"/>
+		<arg name="is_publishTF" default="true"/>
+		<arg name="tf_target_topic" value="odom/ground_truth"/>
+		<arg name="robot_version" default="V6"/>
+	</include>
+	
+	<node name="transform_map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0.0 0.0 0.0 0 0 0 1 map agent1/odom" />
+	
+	<!-- AGENT2 -->
+	<include file="$(find hamster_vehicle_gazebo)/launch/hamster_vehicle_spawner.launch">
+		<arg name="agent" value="agent2"/>
+		<arg name="use_keyboard" value="$(arg use_keyboard)"/>
+		<arg name="x" value="$(arg x)"/>
+		<arg name="y" value="$(arg y)"/>
+		<arg name="is_publishTF" default="true"/>
+		<arg name="tf_target_topic" value="odom/ground_trut"/>
+		<arg name="robot_version" default="V6"/>
+	</include>
+	
+	<node name="transform_map_odom2" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map agent2/odom" />
 
 </launch>
