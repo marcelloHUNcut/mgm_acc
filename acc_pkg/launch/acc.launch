@@ -2,16 +2,15 @@
 
 <launch>
 	
-	<node name = "test_odom_path" pkg = "acc_pkg" type = "odom_path_node">
-		<param name = "path_topic_name" value = "/path/raw" />
-		<param name = "odom_topic_name" value = "/agent1/odom/raw" />
-	</node>
 
-	<node name = "test_odom_path2" pkg = "acc_pkg" type = "odom_path_node">
-		<param name = "path_topic_name" value = "/path/ground_truth" />
-		<param name = "odom_topic_name" value = "/agent1/odom/ground_truth" />
-	</node>
 
-	<node name = "acc_node" pkg = "acc_pkg" type = "acc">
+
+<node name = "acc_node" pkg = "acc_pkg" type = "odom_path_node">
+	<param name = "path_topic_name" value = "/path/raw" />
+	<param name = "odom_topic_name" value = "/agent1/odom/raw" />
+		
+    <rosparam file="$(find acc_pkg)/param/acc_param.yaml" command="load" />
+</node>
+
 
 </launch>
