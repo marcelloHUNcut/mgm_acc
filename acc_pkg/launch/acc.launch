@@ -17,7 +17,7 @@
 	
 	<!-- Robot calibration:  AGENT2-->
 	<arg name="use_keyboard" value="true"/>
-	<arg name="x" value="1.50"/>
+	<arg name="x" value="0"/>
 	<arg name="y" value="0.0"/>
 	
 	<!-- GAZEBO -->
@@ -33,7 +33,7 @@
 	<include file="$(find hamster_vehicle_gazebo)/launch/hamster_vehicle_spawner.launch">
 		<arg name="agent" value="agent1"/>
 		<arg name="use_keyboard" value="false"/>
-		<arg name="x" value="0"/>
+		<arg name="x" value="0.50"/>
 		<arg name="y" value="0"/>
 		<arg name="is_publishTF" default="true"/>
 		<arg name="tf_target_topic" value="odom/ground_truth"/>
