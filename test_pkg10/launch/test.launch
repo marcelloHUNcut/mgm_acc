@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<launch>
+	
+	<arg name="agent" default="gokart"/>
+	<arg name="rviz_file" default="$(find test_pkg10)/rviz/test.rviz"/>
+	
+	<param name="/use_sim_time" value="true"/>
+
+	<param name="robot_description" command="$(find xacro)/xacro $(find hamster_vehicle_description)/urdf/hamster.urdf.xacro"/>
+	
+	<!-- Rosbag playback-->
+	<node pkg="rosbag" type="play" name="playback" args="--clock $(find test_pkg2)/bag/2022-10-24-22-31-53.bag --topics /tf /tf_static /agent1/odom/raw /agent1/odom/ground_truth /agent1/scan" output="screen"/>
+		
+	<node name="test_odom_path" pkg="test_pkg2" type="odom_path_node">
+		<param name="path_topic_name" 		value="/path/raw" />
+		<param name="odom_topic_name" 		value="/agent1/odom/raw" />
+		<param name="max_size" 		value="500" />
+	</node>
+
+	<node name="test_odom_path2" pkg="test_pkg2" type="odom_path_node">
+		<param name="path_topic_name" 		value="/path/ground_truth" />
+		<param name="odom_topic_name" 		value="/agent1/odom/ground_truth" />
+		<param name="max_size" 		value="500" />
+	</node>
+	
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_file)"/>
+
+	<node name="test_dist" pkg="test_pkg10" type="test_dist" output="screen"/>
+	<node name="test_filt" pkg="test_pkg10" type="test_filt" output="screen"/>
+
+
+</launch>

@@ -1,0 +1,2 @@
+Feladat:
+Laserscan típusú üzenetre feliratkozás és [0˚,360˚] között vegyük ki minden 5. pontot és map frame-be transzformálva PointCloud2 típusú üzenetként kommunikáljuk ki a '/cloud' topic-ra
