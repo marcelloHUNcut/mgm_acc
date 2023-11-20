@@ -9,15 +9,12 @@
 
 	<param name="robot_description" command="$(find xacro)/xacro $(find hamster_vehicle_description)/urdf/hamster.urdf.xacro"/>
 
-	<node name = "acc_node" pkg = "acc_pkg" type = "acc">
-	</node>
-
 	<env name="GAZEBO_MODEL_PATH" value="$(find hamster_vehicle_gazebo):$(find hamster_vehicle_gazebo)/models"/>
 	<arg name="gui" value="true"/>
 	
 	<!-- Robot calibration:  AGENT2-->
-	<arg name="use_keyboard" value="true"/>
-	<arg name="x" value="0"/>
+	<arg name="use_keyboard" value="false"/>
+	<arg name="x" value="2.0"/>
 	<arg name="y" value="0.0"/>
 	
 	<!-- GAZEBO -->
@@ -31,9 +28,9 @@
 	
 	<!-- AGENT1 -->
 	<include file="$(find hamster_vehicle_gazebo)/launch/hamster_vehicle_spawner.launch">
-		<arg name="agent" value="agent1"/>
+		<arg name="agent" value="agent2"/>
 		<arg name="use_keyboard" value="false"/>
-		<arg name="x" value="0.50"/>
+		<arg name="x" value="0.0"/>
 		<arg name="y" value="0"/>
 		<arg name="is_publishTF" default="true"/>
 		<arg name="tf_target_topic" value="odom/ground_truth"/>
@@ -44,7 +41,7 @@
 	
 	<!-- AGENT2 -->
 	<include file="$(find hamster_vehicle_gazebo)/launch/hamster_vehicle_spawner.launch">
-		<arg name="agent" value="agent2"/>
+		<arg name="agent" value="agent1"/>
 		<arg name="use_keyboard" value="$(arg use_keyboard)"/>
 		<arg name="x" value="$(arg x)"/>
 		<arg name="y" value="$(arg y)"/>
@@ -54,5 +51,8 @@
 	</include>
 	
 	<node name="transform_map_odom2" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map agent2/odom" />
+
+	<node name = "kiskutya" pkg = "acc_pkg" type = "acc_node">
+	</node>
 
 </launch>
