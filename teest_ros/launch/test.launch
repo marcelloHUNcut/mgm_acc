@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="teest_ros" type="kiskutya" name="test" /> 
+    <node pkg="teest_ros" type="kiskutya2" name="test2" /> 
+
+    <node pkg="rviz" type="rviz" name="rviz" /> 
+
+</launch>
