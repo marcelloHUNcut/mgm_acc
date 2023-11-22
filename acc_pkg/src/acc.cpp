@@ -34,12 +34,15 @@ struct acc_pub
 
             // TODO: Filter
             distance = scan_in->ranges[0];
-            acc();
         
         }
         else{
             distance = 33;
         }
+
+        time_to_collision(distance, relative_speed, relative_accel);
+        acc(speed_rear, speed_desired);
+        ROS_INFO("This is an informational message!");
 
     }
     void scan_callback_front(const nav_msgs::Odometry &odom_front){
@@ -78,7 +81,7 @@ struct acc_pub
         lastOdometry_rear = msg;
     }
 
-    void time_to_collision()
+    void time_to_collision(double distance, double relative_speed, double relative_accel)
     {
         if(accel_rear >= 0){
             ttc = -distance/relative_speed;
@@ -87,12 +90,17 @@ struct acc_pub
         else{
             ttc = (-relative_speed - sqrt(pow(relative_speed,2)- 2 * relative_accel * distance)) / relative_accel;
         }
+
     }
 
-    void acc(){
+    void acc(double speed_rear, double speed_desired){
         
         if(ttc < ttc_min){
             speed_rear -= 0.05;
+
+            if(speed_rear <= 0){
+                speed_rear = 0;
+            }
         }
         
         if(speed_rear < speed_desired){
@@ -102,7 +110,7 @@ struct acc_pub
         }
 
         if(ttc_min < ttc && ttc < ttc_max){
-            
+            speed_rear = speed_rear;
         }
 
         if(distance = 33){
@@ -131,10 +139,11 @@ struct acc_pub
     ackermann_msgs::AckermannDriveStamped backspeed;
     //ackermann_msgs::AckermannDriveStamped backspeed2;
 
-    ros::Subscriber scanin;
+
     ros::Publisher speedout_rear;
     ros::Publisher speedout_front;
     ros::Subscriber speedin_rear;
+    ros::Subscriber scanin;
     ros::Subscriber speedin_front;
     ros::Subscriber odometry_sub_front;
     ros::Subscriber odometry_sub_rear;
@@ -146,5 +155,7 @@ int main(int argc, char **argv)
     ros::init(argc,argv,"acc_node");
     ros::NodeHandle nh("~");
     acc_pub x(nh);
+
     ros::spin();
+
 }
