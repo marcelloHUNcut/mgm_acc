@@ -12,7 +12,6 @@
 #include <ackermann_msgs/AckermannDriveStamped.h>
 
 
-
 struct acc_pub
 {
     acc_pub(ros::NodeHandle nh_):n(nh_)
@@ -30,6 +29,9 @@ struct acc_pub
     void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_in)
     {
 
+        double relative_speed = speed_front - speed_rear;
+        double relative_accel = accel_front - accel_rear;
+       
         if((scan_in->range_min < scan_in->ranges[0]) && (scan_in->ranges[0] < scan_in->range_max)){
 
             // TODO: Filter
@@ -40,14 +42,25 @@ struct acc_pub
             distance = 33;
         }
 
+
         time_to_collision(distance, relative_speed, relative_accel);
         acc(speed_rear, speed_desired);
-        ROS_INFO("This is an informational message!");
+
+        ROS_INFO("ttc: %f", ttc);
+        ROS_INFO("distance: %f", distance);
+        //ROS_INFO("speed_rear: %f", speed_rear);
+        ROS_INFO("accel_rear: %f", accel_rear);
+        //ROS_INFO("speed_front: %f", speed_front);
+        //ROS_INFO("accel_front: %f", accel_front);
+        ROS_INFO("relative_speed %f", relative_speed);
+        ROS_INFO("relative_accel %f", relative_accel);
 
     }
+
     void scan_callback_front(const nav_msgs::Odometry &odom_front){
 
-        speed_front = odom_front.twist.twist.linear.x;
+        //speed_front = odom_front.twist.twist.linear.x;
+        speed_front = 0.1;
 
     }
     
@@ -63,7 +76,11 @@ struct acc_pub
             double deltaTime = (currentTime - lastOdometry_front->header.stamp).toSec();
 
             double linearVelocity = lastOdometry_front->twist.twist.linear.x;
-            double accel_front = (msg->twist.twist.linear.x - linearVelocity) / deltaTime;
+            double test_front = msg->twist.twist.linear.x - linearVelocity;
+            double accel_front = test_front / deltaTime;
+            //ROS_INFO("deltaTime_front: %f", deltaTime);
+            //ROS_INFO("linearVelocity_front: %f", linearVelocity);
+            //ROS_INFO("test_front %f", test_front);
         }
 
         lastOdometry_front = msg;
@@ -75,7 +92,13 @@ struct acc_pub
             double deltaTime = (currentTime - lastOdometry_rear->header.stamp).toSec();
 
             double linearVelocity = lastOdometry_rear->twist.twist.linear.x;
-            double accel_rear = (msg->twist.twist.linear.x - linearVelocity) / deltaTime;
+            double test_rear = msg->twist.twist.linear.x - linearVelocity;
+            double accel_rear = test_rear / deltaTime;
+            //ROS_INFO("deltaTime_rear: %f", deltaTime);
+            //ROS_INFO("linearVelocity_rear: %f", linearVelocity);
+            //ROS_INFO("test_rear: %f", test_rear);
+            //ROS_INFO("valami: %f", msg->twist.twist.linear.x);
+
         }
 
         lastOdometry_rear = msg;
@@ -83,8 +106,9 @@ struct acc_pub
 
     void time_to_collision(double distance, double relative_speed, double relative_accel)
     {
-        if(accel_rear >= 0){
-            ttc = -distance/relative_speed;
+  
+        if(accel_rear >= 0.0){
+            ttc = distance/relative_speed;
         }
         
         else{
@@ -96,16 +120,16 @@ struct acc_pub
     void acc(double speed_rear, double speed_desired){
         
         if(ttc < ttc_min){
-            speed_rear -= 0.05;
+            speed_rear -= 0.5;
 
-            if(speed_rear <= 0){
-                speed_rear = 0;
+            if(speed_rear <= 0.0){
+                speed_rear = 0.0;
             }
         }
         
-        if(speed_rear < speed_desired){
+        if(speed_rear <= speed_desired){
             while(ttc > ttc_max){
-                speed_rear += 0.05;
+                speed_rear += 0.5;
             }
         }
 
@@ -113,31 +137,33 @@ struct acc_pub
             speed_rear = speed_rear;
         }
 
-        if(distance = 33){
+        if(distance == 33){
             speed_rear = speed_desired;
         }
 
-        backspeed.drive.speed = speed_rear;
-        speedout_rear.publish(backspeed);
+        speed_rear_out.drive.speed = speed_rear;
+        speedout_rear.publish(speed_rear_out);
+        speed_front_out.drive.speed = speed_front;
+        speedout_front.publish(speed_front_out);
 
     }
 
-    double speed_front = 0;
-    double speed_rear = 0;
-    double relative_speed = speed_rear - speed_front;
-    double relative_accel = accel_rear - accel_front;
+    double speed_front = 0.1;
+    double speed_rear;
+    double relative_speed;
+    double relative_accel;
     double accel_front;
     double accel_rear;
     double distance;
     double ttc;
-    double ttc_min = 3;
-    double ttc_max = 5;
+    double ttc_min = 3.0;
+    double ttc_max = 5.0;
     double speed_desired = 0.2;
     nav_msgs::Odometry::ConstPtr lastOdometry_front;
     nav_msgs::Odometry::ConstPtr lastOdometry_rear;
     
-    ackermann_msgs::AckermannDriveStamped backspeed;
-    //ackermann_msgs::AckermannDriveStamped backspeed2;
+    ackermann_msgs::AckermannDriveStamped speed_rear_out;
+    ackermann_msgs::AckermannDriveStamped speed_front_out;
 
 
     ros::Publisher speedout_rear;
@@ -155,7 +181,5 @@ int main(int argc, char **argv)
     ros::init(argc,argv,"acc_node");
     ros::NodeHandle nh("~");
     acc_pub x(nh);
-
     ros::spin();
-
 }

@@ -14,7 +14,7 @@
 	
 	<!-- Robot calibration:  AGENT2-->
 	<arg name="use_keyboard" value="false"/>
-	<arg name="x" value="2.0"/>
+	<arg name="x" value="3.0"/>
 	<arg name="y" value="0.0"/>
 	
 	<!-- GAZEBO -->
@@ -52,7 +52,7 @@
 	
 	<node name="transform_map_odom2" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map agent2/odom" />
 
-	<node name = "acc_test" pkg = "acc_pkg" type = "acc_node">
+	<node name = "acc_test" pkg = "acc_pkg" type = "acc_node" output="screen">
 	</node>
 
 </launch>
