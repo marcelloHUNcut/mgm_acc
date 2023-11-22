@@ -52,7 +52,7 @@
 	
 	<node name="transform_map_odom2" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 1 map agent2/odom" />
 
-	<node name = "kiskutya" pkg = "acc_pkg" type = "acc_node">
+	<node name = "acc_test" pkg = "acc_pkg" type = "acc_node">
 	</node>
 
 </launch>
