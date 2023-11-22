@@ -59,8 +59,7 @@ struct acc_pub
 
     void scan_callback_front(const nav_msgs::Odometry &odom_front){
 
-        //speed_front = odom_front.twist.twist.linear.x;
-        speed_front = 0.1;
+        speed_control_front();
 
     }
     
@@ -108,7 +107,7 @@ struct acc_pub
     {
   
         if(accel_rear >= 0.0){
-            ttc = distance/relative_speed;
+            ttc = -distance/relative_speed;
         }
         
         else{
@@ -120,7 +119,7 @@ struct acc_pub
     void acc(double speed_rear, double speed_desired){
         
         if(ttc < ttc_min){
-            speed_rear -= 0.5;
+            speed_rear -= 0.1;
 
             if(speed_rear <= 0.0){
                 speed_rear = 0.0;
@@ -129,12 +128,12 @@ struct acc_pub
         
         if(speed_rear <= speed_desired){
             while(ttc > ttc_max){
-                speed_rear += 0.5;
+                speed_rear += 0.1;
             }
         }
 
-        if(ttc_min < ttc && ttc < ttc_max){
-            speed_rear = speed_rear;
+        if(ttc_min < ttc && ttc > ttc_max){
+
         }
 
         if(distance == 33){
@@ -143,12 +142,31 @@ struct acc_pub
 
         speed_rear_out.drive.speed = speed_rear;
         speedout_rear.publish(speed_rear_out);
-        speed_front_out.drive.speed = speed_front;
-        speedout_front.publish(speed_front_out);
 
     }
 
-    double speed_front = 0.1;
+    void speed_control_front(){
+        ros::Time currentTime = ros::Time::now();
+        time = currentTime.toSec();
+        ROS_INFO("time: %f", time);
+
+        if(time > 1.0 && time < 5.0){
+            speed_front = 0.1;
+        }
+        if(time > 5.0 && time < 10.0){
+            speed_front = 0.5;
+        }
+        if(time > 10.0){
+            speed_front = 0.0;
+        }
+
+        ROS_INFO("speed_front %f", speed_front);
+
+        speed_front_out.drive.speed = speed_front;
+        speedout_front.publish(speed_front_out);    
+    }
+
+    double speed_front;
     double speed_rear;
     double relative_speed;
     double relative_accel;
@@ -158,7 +176,8 @@ struct acc_pub
     double ttc;
     double ttc_min = 3.0;
     double ttc_max = 5.0;
-    double speed_desired = 0.2;
+    double speed_desired = 0.7;
+    double time;
     nav_msgs::Odometry::ConstPtr lastOdometry_front;
     nav_msgs::Odometry::ConstPtr lastOdometry_rear;
     
