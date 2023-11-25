@@ -21,8 +21,8 @@ struct acc_pub
        speedout_front = n.advertise<ackermann_msgs::AckermannDriveStamped>("/agent1/ackermann_cmd",1);
        speedin_rear = n.subscribe("/agent2/odom/ground_truth", 1, &acc_pub::scan_callback_rear, this);
        speedin_front = n.subscribe("/agent1/odom/ground_truth", 1, &acc_pub::scan_callback_front, this);
-       /*odometry_sub_front = n.subscribe("/agent1/odom/ground_truth", 1, &acc_pub::odometryCallback_front, this);
-       odometry_sub_rear = n.subscribe("/agent2/odom/ground_truth", 1, &acc_pub::odometryCallback_rear, this);*/
+       //odometry_sub_front = n.subscribe("/agent1/odom/ground_truth", 1, &acc_pub::odometryCallback_front, this);
+       //odometry_sub_rear = n.subscribe("/agent2/odom/ground_truth", 1, &acc_pub::odometryCallback_rear, this);
 
     } 
     
@@ -31,11 +31,13 @@ struct acc_pub
 
         speed_control_front();
         relative_speed = speed_front_in - speed_rear_in;
+
         //relative_accel = accel_front - accel_rear;
        
         if((scan_in->range_min < scan_in->ranges[0]) && (scan_in->ranges[0] < scan_in->range_max)){
 
             // TODO: Filter
+            //for(int i; 0<=i<=)
             distance = scan_in->ranges[0];
         
         }
@@ -45,11 +47,11 @@ struct acc_pub
 
 
         time_to_collision(distance, relative_speed);
-        acc(speed_rear_in, speed_desired);
+        acc(speed_rear_in, speed_desired,distance);
 
         ROS_INFO("ttc: %f", ttc);
         ROS_INFO("distance: %f", distance);
-        ROS_INFO("speed_rear: %f", speed_rear_in);
+        ROS_INFO("speed_rear_in: %f", speed_rear_in);
         //ROS_INFO("accel_rear: %f", accel_rear);
         ROS_INFO("speed_front_in: %f", speed_front_in);
         //ROS_INFO("accel_front: %f", accel_front);
@@ -61,12 +63,18 @@ struct acc_pub
     void scan_callback_front(const nav_msgs::Odometry &odom_front){
 
         speed_front_in = odom_front.twist.twist.linear.x;
+        if(speed_front_in < 0){
+            speed_front_in = 0;
+        }
 
     }
     
     void scan_callback_rear(const nav_msgs::Odometry &odom_rear){
 
         speed_rear_in = odom_rear.twist.twist.linear.x;
+        if(speed_rear_in < 0){
+            speed_rear_in = 0;
+        }
         
     }
 
@@ -107,65 +115,68 @@ struct acc_pub
     void time_to_collision(double distance, double relative_speed)
     {
   
-        if(relative_speed < 0){
-            ttc = -distance/relative_speed;
-        }
-        if(relative_speed >= 0 || distance == 33){
+        ttc = -distance/relative_speed;
+  
+        /*if(relative_speed >= 0 || distance == 33){
             ttc = -3;
         }
+        if(relative_speed == 0){
+            ttc = -13;
+        }
 
-            /*if(relative_speed != 0){
+            if(relative_speed != 0){
                 ttc = 3;
             }
             else{
                 ttc = 10;
             }
-        }
+        }*/
         
-        else{
-            ttc = 20;//(-relative_speed - sqrt(pow(relative_speed,2)- 2 * relative_accel * distance)) / relative_accel;
+        /*else{
+            ttc =abs((-relative_speed - sqrt(pow(relative_speed,2)- 2 * relative_accel * distance)) / relative_accel);
         }*/
 
     }
 
-    void acc(double speed_rear_in, double speed_desired){
+    void acc(double speed_rear_in, double speed_desired, double distance){
         
-        if(ttc < ttc_min){
-            speed_rear_out = speed_rear_in - 0.1;
+        if((0 < ttc < ttc_min) && (relative_speed < 0) || (distance < 0.6)){
+            speed_rear_out = speed_rear_in - 0.005;
+        }
+        
+        if((((ttc < 0) || (ttc > ttc_max)) && distance > 0.8)  || (distance == 33)){
+            speed_rear_out = speed_rear_in + 0.005;
+        }
 
-            if(speed_rear_in <= 0.0){
-                speed_rear_out = 0.0;
-            }
-        }
-        
-        if(ttc == -3){
-            speed_rear_out = speed_rear_in + 0.1;
-        }
 
         if(speed_rear_out >= speed_desired){
             speed_rear_out = speed_desired;
         }
-  
-
+        
+        if(speed_rear_in <= 0.0){
+            speed_rear_out = 0.0;
+        }
+    
+        ROS_INFO("speed_rear_out %f", speed_rear_out);
         speed_rear_out_ack.drive.speed = speed_rear_out;
         speedout_rear.publish(speed_rear_out_ack);
-
     }
+    
 
     void speed_control_front(){
         ros::Time currentTime = ros::Time::now();
         time = currentTime.toSec();
         //ROS_INFO("time: %f", time);
 
-        if(time > 5.0 && time < 10.0){
+        if(time > 0.0){
             speed_front_out = 0.1;
         }
-        if(time > 10.0 && time < 15.0){
+        /*if(time > 10.0 && time < 15.0){
             speed_front_out = 0.5;
         }
         if(time > 15.0){
             speed_front_out= 0.3;
-        }
+        }*/
 
         //ROS_INFO("speed_front_out %f", speed_front_out);
 
@@ -183,8 +194,9 @@ struct acc_pub
     double accel_rear;
     double distance;
     double ttc;
-    double ttc_min = 50.0;
-    double speed_desired = 0.7;
+    double ttc_min = 5.0;
+    double ttc_max = 10.0;
+    double speed_desired = 2;
     double time;
     nav_msgs::Odometry::ConstPtr lastOdometry_front;
     nav_msgs::Odometry::ConstPtr lastOdometry_rear;

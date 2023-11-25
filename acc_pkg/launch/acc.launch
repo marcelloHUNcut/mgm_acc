@@ -14,7 +14,7 @@
 	
 	<!-- Robot calibration:  AGENT2-->
 	<arg name="use_keyboard" value="false"/>
-	<arg name="x" value="3.0"/>
+	<arg name="x" value="2.0"/>
 	<arg name="y" value="0.0"/>
 	
 	<!-- GAZEBO -->
