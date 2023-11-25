@@ -27,32 +27,39 @@ struct acc_pub
     
     void scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_in)
     {
-
+        double distance_min = 33;
         speed_control_front(speed_front_in);
         angle_control(angle);
         relative_speed = speed_front_in - speed_rear_in;
 
-       
-        if((scan_in->range_min < scan_in->ranges[0]) && (scan_in->ranges[0] < scan_in->range_max)){
+        int j = -1;
+        for(int i=0; i<181;i++){
+                     
+            if((scan_in->range_min < scan_in->ranges[j]) && (scan_in->ranges[j] < scan_in->range_max)){
 
-            // TODO: Filter
-            //for(int i; 0<=i<=)
-            distance = scan_in->ranges[0];
-        
+                distance = scan_in->ranges[j];
+                ROS_INFO("distance %f", distance);
+
+                if(distance < distance_min){
+                    distance_min = distance;
+                }
+            }        
+            if(j==90){
+                j = 270;
+            }
+            j++;
+
         }
-        else{
-            distance = 33;
-        }
 
 
-        time_to_collision(distance, relative_speed);
-        acc(speed_rear_in, speed_desired, distance, relative_speed);
+        time_to_collision(distance_min, relative_speed);
+        acc(speed_rear_in, speed_desired, distance_min, relative_speed);
 
-        ROS_INFO("ttc: %f", ttc);
-        ROS_INFO("distance: %f", distance);
-        ROS_INFO("speed_rear_in: %f", speed_rear_in);
-        ROS_INFO("speed_front_in: %f", speed_front_in);
-        ROS_INFO("relative_speed %f", relative_speed);
+        //ROS_INFO("ttc: %f", ttc);
+        ROS_INFO("distance_min: %f", distance_min);
+        //ROS_INFO("speed_rear_in: %f", speed_rear_in);
+        //ROS_INFO("speed_front_in: %f", speed_front_in);
+        //ROS_INFO("relative_speed %f", relative_speed);
 
     }
 
@@ -74,28 +81,28 @@ struct acc_pub
         
     }
 
-    void time_to_collision(double distance, double relative_speed)
+    void time_to_collision(double distance_min, double relative_speed)
     {
   
-        ttc = -distance/relative_speed;
+        ttc = -distance_min/relative_speed;
 
     }
 
-    void acc(double speed_rear_in, double speed_desired, double distance, double relative_speed){
+    void acc(double speed_rear_in, double speed_desired, double distance_min, double relative_speed){
         
-        if(((0 < ttc < ttc_min) && (relative_speed < 0)) || distance < 0.6){
+        if(((0 < ttc < ttc_min) && (relative_speed < 0)) || distance_min < 0.6){
             speed_rear_out = speed_rear_in - 0.007;
         }
 
-        if(distance < 0.6 && speed_rear_in < 0.1){
+        if(distance_min < 0.6 && speed_rear_in < 0.1){
             speed_rear_out = speed_rear_in - 0.01;
         }
         
-        if((((ttc < 0) || (ttc > ttc_max)) && distance > 0.8)){
+        if((((ttc < 0) || (ttc > ttc_max)) && distance_min > 0.8)){
             speed_rear_out = speed_rear_in + 0.007;
         }
 
-        if(distance == 33 || relative_speed > 0.1){
+        if(distance_min == 33 || relative_speed > 0.1){
             speed_rear_out = speed_rear_in + 0.01;
         }
 
@@ -111,7 +118,7 @@ struct acc_pub
             speed_rear_out = speed_rear_in + 0.01;
         }
 
-        if(distance < 0.3){
+        if(distance_min < 0.3){
             speed_rear_out = speed_rear_in - 0.13;
             ROS_INFO("COLLISION WARNING!");
         }
@@ -119,6 +126,7 @@ struct acc_pub
         ROS_INFO("speed_rear_out %f", speed_rear_out);
         speed_rear_out_ack.drive.speed = speed_rear_out;
         speedout_rear.publish(speed_rear_out_ack);
+
     }
     
 
@@ -136,14 +144,20 @@ struct acc_pub
         if(time > 23.0 && time < 26.0){
             speed_front_out = speed_front_in - 0.01;
         }
-        if(time > 28.0){
+        if(time > 28.0 && time < 33){
             speed_front_out = speed_front_in + 0.01;
         }
-        if(speed_front_in >= 0.4 && time > 26.0 && time < 55.0){
-            speed_front_out = 0.4;
+        if(speed_front_in >= 0.3 && time > 26.0 && time < 35.0){
+            speed_front_out = 0.3;
+        }
+        if(time > 35){
+            speed_front_out = speed_front_in - 0.01;
+        }
+        if(time > 35 && speed_front_in <= 0.3){
+            speed_front_out = 0.3;
         }
 
-        if(time > 70){
+        if(time > 53){
             speed_front_out = 0;
         }
         if(speed_front_in >= 0.7){
@@ -163,7 +177,7 @@ struct acc_pub
     void angle_control(float angle){
         ros::Time currentTime = ros::Time::now();
         time = currentTime.toSec();
-        if(time > 45 && time < 50){
+        if(time > 45 && time < 47){
             angle_ack.drive.steering_angle = angle;
             angle_pub.publish(angle_ack);
         }
