@@ -51,7 +51,6 @@ struct acc_pub
 
         }
 
-
         time_to_collision(distance_min, relative_speed);
         acc(speed_rear_in, speed_desired, distance_min, relative_speed);
 
@@ -98,11 +97,11 @@ struct acc_pub
             speed_rear_out = speed_rear_in - 0.01;
         }
         
-        if((((ttc < 0) || (ttc > ttc_max)) && distance_min > 0.8)){
+        if((((ttc < 0) || (ttc > ttc_max)) && distance_min > 0.8) && speed_rear_out < speed_desired){
             speed_rear_out = speed_rear_in + 0.007;
         }
 
-        if(distance_min == 33 || relative_speed > 0.1){
+        if(distance_min == 33 || relative_speed > 0.1 && speed_rear_out < speed_desired){
             speed_rear_out = speed_rear_in + 0.01;
         }
 
@@ -114,7 +113,7 @@ struct acc_pub
             speed_rear_out = 0.0;
 
         }
-        if(ttc < 0 && relative_speed > 0.25){
+        if(ttc < 0 && relative_speed > 0.25 && speed_rear_out < speed_desired){
             speed_rear_out = speed_rear_in + 0.01;
         }
 
@@ -124,6 +123,7 @@ struct acc_pub
         }
     
         ROS_INFO("speed_rear_out %f", speed_rear_out);
+        speed_rear_out_ack.header.stamp = ros::Time::now();
         speed_rear_out_ack.drive.speed = speed_rear_out;
         speedout_rear.publish(speed_rear_out_ack);
 
@@ -144,24 +144,20 @@ struct acc_pub
         if(time > 23.0 && time < 26.0){
             speed_front_out = speed_front_in - 0.01;
         }
-        if(time > 28.0 && time < 33){
+        if(time > 28.0 && time < 31){
             speed_front_out = speed_front_in + 0.01;
         }
-        if(speed_front_in >= 0.3 && time > 26.0 && time < 35.0){
+        if(time > 31.0 && time < 40.0){
             speed_front_out = 0.3;
         }
-        if(time > 35){
+        if(time > 40){
+            speed_front_out = 0.8;
+        }
+        /*if(time > 35){
             speed_front_out = speed_front_in - 0.01;
-        }
-        if(time > 35 && speed_front_in <= 0.3){
-            speed_front_out = 0.3;
-        }
-
+        }*/
         if(time > 53){
             speed_front_out = 0;
-        }
-        if(speed_front_in >= 0.7){
-            speed_front_out = 0.7;
         }
         if(speed_front_in <= 0.0 && 10 < time && time < 28 ){
             speed_front_out = 0.0;
@@ -169,6 +165,7 @@ struct acc_pub
 
         //ROS_INFO("speed_front_out %f", speed_front_out);
 
+        speed_front_out_ack.header.stamp = ros::Time::now();
         speed_front_out_ack.drive.speed = speed_front_out;
         speedout_front.publish(speed_front_out_ack);
 
@@ -198,8 +195,6 @@ struct acc_pub
     double speed_desired = 0.5;
     double time;
     float angle = -5.0;
-    nav_msgs::Odometry::ConstPtr lastOdometry_front;
-    nav_msgs::Odometry::ConstPtr lastOdometry_rear;
     
     ackermann_msgs::AckermannDriveStamped speed_rear_out_ack;
     ackermann_msgs::AckermannDriveStamped speed_front_out_ack;
