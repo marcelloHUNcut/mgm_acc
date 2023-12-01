@@ -59,11 +59,11 @@ struct acc_pub
         time_to_collision(distance_min, relative_speed);
         acc(speed_rear_in, speed_desired, distance_min, relative_speed);
 
-        ROS_INFO("ttc: %f", ttc);
+        //ROS_INFO("ttc: %f", ttc);
         //ROS_INFO("distance_min: %f", distance_min);
         //ROS_INFO("speed_rear_in: %f", speed_rear_in);
         //ROS_INFO("speed_front_in: %f", speed_front_in);
-        ROS_INFO("relative_speed %f", relative_speed);
+        //ROS_INFO("relative_speed %f", relative_speed);
 
     }
 
@@ -89,16 +89,18 @@ struct acc_pub
     {
   
         ttc = -distance_min/relative_speed;
+        //ROS_INFO("ttc %f", ttc);
 
     }
 
     void acc(double speed_rear_in, double speed_desired, double distance_min, double relative_speed){
         
-        if((0 < ttc && ttc < ttc_min && relative_speed < 0) || distance_min < 0.6){
-            speed_rear_out = speed_rear_in - 0.007;
-            ROS_INFO("anyad");
+ 
+        
+        if((0 < ttc && ttc < ttc_min) || distance_min < 0.6){
+            speed_rear_out = speed_rear_out - 0.007;
         }
-
+     
         if(distance_min < 0.6 && speed_rear_in < 0.1){
             speed_rear_out = speed_rear_in - 0.01;
         }
@@ -125,10 +127,10 @@ struct acc_pub
 
         if(distance_min < 0.3){
             speed_rear_out = speed_rear_in - 0.13;
-            ROS_INFO("COLLISION WARNING!");
+            //ROS_INFO("COLLISION WARNING!");
         }
     
-        ROS_INFO("speed_rear_out %f", speed_rear_out);
+        //ROS_INFO("speed_rear_out %f", speed_rear_out);
         speed_rear_out_ack.header.stamp = ros::Time::now();
         speed_rear_out_ack.drive.speed = speed_rear_out;
         speedout_rear.publish(speed_rear_out_ack);
@@ -155,16 +157,16 @@ struct acc_pub
         if(time > 31.0 && time < 40.0){
             speed_front_out = 0.3;
         }
-        if(time > 40){
-            speed_front_out = 0.4;
+        if(time > 40 && time < 45 || time > 50){
+            speed_front_out = 0.6;
         }
-        /*if(time > 35){
-            speed_front_out = speed_front_in - 0.01;
-        }*/
+        if(time > 45 && time < 50){
+            speed_front_out = 0.3;
+        }
         if(time > 53){
             speed_front_out = 0;
         }
-        if(speed_front_in <= 0.0 && 10 < time && time < 28 ){
+        if(speed_front_in <= 0.0 && 10 < time && time < 24 ){
             speed_front_out = 0.0;
         }
 
