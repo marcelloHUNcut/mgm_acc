@@ -1,0 +1,19 @@
+áttekintése a szimulációknak
+test.launch
+urdf file
+
+térképezés
+rqt_tf_tree
+
+<!-- teleop_key -->
+<!-- roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch -->
+
+<!-- Mapsaver -->
+<!-- rosrun map_server map_saver -f ~/map -->
+
+Move_base
+map_server
+
+
+Hamster szimuláció
+roslaunch hamster_vehicle hamster_single_sim.launch
